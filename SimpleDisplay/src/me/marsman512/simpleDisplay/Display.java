@@ -2,6 +2,7 @@ package me.marsman512.simpleDisplay;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.opengl.GL11C.*;
 import org.lwjgl.glfw.GLFWVidMode;
 import java.lang.Math;
 
@@ -9,6 +10,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.GL;
+import org.lwjgl.PointerBuffer;
 
 import me.marsman512.simpleDisplay.input.*;
 import me.marsman512.simpleDisplay.input.gamepad.*;
@@ -18,11 +20,15 @@ public class Display {
 	private static long f_windowID;
 	private static int f_width, f_height;
 	private static int f_fbWidth, f_fbHeight;
+	private static int f_defX, f_defY;
+	private static WindowAttribs f_defWinAttribs;
 	
 	/**
 	 * Calls glfwInit() and creates a window with the supplied parameters.
 	 */
 	public static void start(ContextAttribs ctx, PixelFormat pForm, WindowAttribs wAttribs) {
+		f_defWinAttribs = wAttribs;
+		
 		// Start GLFW.
 		if(!glfwInit())
 			throw new IllegalStateException("Failed to initialize GLFW!");
@@ -64,28 +70,17 @@ public class Display {
 			throw new RuntimeException("Failed to create the window! Please set a GLFW error callback to learn more!");
 		
 		// Make sure we have the window's real size
-		try(MemoryStack stack = MemoryStack.stackPush())
-		{
-			IntBuffer width = stack.callocInt(1);
-			IntBuffer height = stack.callocInt(1);
-			IntBuffer fbWidth = stack.callocInt(1);
-			IntBuffer fbHeight = stack.callocInt(1);
-			
-			glfwGetWindowSize(f_windowID, width, height);
-			glfwGetFramebufferSize(f_windowID, fbWidth, fbHeight);
-			
-			f_width = width.get(0);
-			f_height = height.get(0);
-			f_fbWidth = fbWidth.get(0);
-			f_fbHeight = fbHeight.get(0);
-		}
+		updateSizeVariables();
 		
 		// Center the window on the screen, or it'll look ugly.
-		glfwSetWindowPos(f_windowID, (vidMode.width() - f_width) / 2, (vidMode.height() - f_height) / 2);
+		f_defX = ((vidMode.width() - f_width) / 2);
+		f_defY = ((vidMode.height() - f_height) / 2);
+		glfwSetWindowPos(f_windowID, f_defX, f_defY);
 		
 		// Create an OpenGL context
 		glfwMakeContextCurrent(f_windowID);
 		GL.createCapabilities(ctx.forwardCompat);
+		glViewport(0, 0, f_fbWidth, f_fbHeight);
 		
 		// Enable v-sync, if that's your thing.
 		glfwSwapInterval(wAttribs.vsync ? 1 : 0);
@@ -123,7 +118,7 @@ public class Display {
 	 * USE stop() TO CLEAN UP AT THE END OF A PROGRAM!!!
 	 */
 	public static void close() {
-		
+		glfwSetWindowShouldClose(f_windowID, true);
 	}
 	
 	/**
@@ -134,6 +129,65 @@ public class Display {
 		glfwDestroyWindow(f_windowID);
 		
 		glfwTerminate();
+	}
+	
+	/**
+	 * @param
+	 */
+	public static void setFullscreen(int monitorID) {
+		if(glfwGetWindowMonitor(f_windowID) != 0)
+			return;
+		
+		PointerBuffer monitors = glfwGetMonitors();
+		if(monitorID >= monitors.capacity())
+			throw new IllegalArgumentException("There is no monitor " + monitorID + "!");
+		
+		GLFWVidMode vidMode = glfwGetVideoMode(monitors.get(monitorID));
+		glfwSetWindowMonitor(
+								f_windowID,
+								monitors.get(monitorID),
+								0,
+								0,
+								Math.min(f_width, vidMode.width()), 
+								Math.min(f_height, vidMode.height()), 
+								vidMode.refreshRate()
+							);
+		
+		updateSizeVariables();
+		glViewport(0, 0, f_fbWidth, f_fbHeight);
+	}
+	
+	public static void setWindowed() {
+		if(glfwGetWindowMonitor(f_windowID) == 0)
+			return;
+		
+		GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwSetWindowMonitor(
+				f_windowID, 0, 
+				f_defX, f_defY, 
+				f_defWinAttribs.width, f_defWinAttribs.height, 
+				GLFW_DONT_CARE);
+		
+		updateSizeVariables();
+		glViewport(0, 0, f_fbWidth, f_fbHeight);
+	}
+	
+	private static void updateSizeVariables() {
+		try(MemoryStack stack = MemoryStack.stackPush())
+		{
+			IntBuffer width = stack.callocInt(1);
+			IntBuffer height = stack.callocInt(1);
+			IntBuffer fbWidth = stack.callocInt(1);
+			IntBuffer fbHeight = stack.callocInt(1);
+			
+			glfwGetWindowSize(f_windowID, width, height);
+			glfwGetFramebufferSize(f_windowID, fbWidth, fbHeight);
+			
+			f_width = width.get(0);
+			f_height = height.get(0);
+			f_fbWidth = fbWidth.get(0);
+			f_fbHeight = fbHeight.get(0);
+		}
 	}
 	
 	public static long getWindowID() { return f_windowID; } // Returns the GLFW window handle
