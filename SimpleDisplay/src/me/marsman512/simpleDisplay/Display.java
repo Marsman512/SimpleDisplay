@@ -11,6 +11,7 @@ import java.nio.IntBuffer;
 import org.lwjgl.opengl.GL;
 
 import me.marsman512.simpleDisplay.input.*;
+import me.marsman512.simpleDisplay.input.gamepad.*;
 
 public class Display {
 	
@@ -92,6 +93,7 @@ public class Display {
 		// Start accepting keyboard, mouse, and gamepad input
 		Keyboard.init();
 		Mouse.init();
+		Gamepad.start();
 		
 		// Show the window at long last
 		glfwShowWindow(f_windowID);
@@ -102,6 +104,8 @@ public class Display {
 	 */
 	public static void update() {
 		glfwPollEvents();
+		Gamepad.update();
+		
 		glfwSwapBuffers(f_windowID);
 	}
 	
@@ -111,6 +115,15 @@ public class Display {
 	 */
 	public static boolean shouldClose() {
 		return glfwWindowShouldClose(f_windowID);
+	}
+	
+	/**
+	 * Use this function to close the application.
+	 * DO NOT USE stop() TO CLOSE THE PROGRAM!!!
+	 * USE stop() TO CLEAN UP AT THE END OF A PROGRAM!!!
+	 */
+	public static void close() {
+		
 	}
 	
 	/**
