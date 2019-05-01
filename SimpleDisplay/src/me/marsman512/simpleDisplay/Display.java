@@ -59,6 +59,7 @@ public class Display {
 		glfwWindowHint(GLFW_ALPHA_BITS,   pForm.alphaBits  );
 		glfwWindowHint(GLFW_DEPTH_BITS,   pForm.depthBits  );
 		glfwWindowHint(GLFW_STENCIL_BITS, pForm.stencilBits);
+		glfwWindowHint(GLFW_SAMPLES,      pForm.samples    );
 		
 		// General hints
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // glfwShowWindow() is called later
