@@ -1,7 +1,5 @@
 package me.marsman512.simpleDisplay.input;
 
-import static org.lwjgl.glfw.GLFW.*;
-
 public interface KeyboardEventHandler {
 	/** Copied, modified, and pasted from LWJGL's GLFW.java. */
 	

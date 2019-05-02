@@ -3,8 +3,6 @@ package me.marsman512.simpleDisplay.input.gamepad;
 import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.glfw.GLFWGamepadState;
 
-import java.util.Arrays;
-
 public class GamepadState {
 	
 	public GamepadState() {

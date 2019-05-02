@@ -7,7 +7,7 @@ public class ContextAttribs {
 	public boolean coreProfile = false, forwardCompat = false, debugContext = false;
 	
 	/**
-	 * @return An OpenGL 3.2 context
+	 * @return Settings for an OpenGL 3.2 context
 	 */
 	public static ContextAttribs GL32() {
 		ContextAttribs toReturn = new ContextAttribs();
@@ -17,7 +17,7 @@ public class ContextAttribs {
 	}
 	
 	/**
-	 * @return the minimum supported context supported by MacOSX.
+	 * @return settings for the minimum supported context supported by MacOSX.
 	 */
 	public static ContextAttribs MacOSXContext() {
 		ContextAttribs toReturn = GL32();
@@ -27,6 +27,10 @@ public class ContextAttribs {
 		return toReturn;
 	}
 	
+	/**
+	 * Compare two versions of OpenGL.
+	 * @param other
+	 */
 	public boolean before(ContextAttribs other) {
 		if(this.majorVersion < other.majorVersion)
 			return true;
@@ -34,6 +38,11 @@ public class ContextAttribs {
 			return true;
 		return false;
 	}
+	
+	/**
+	 * Compare two versions of OpenGL.
+	 * @param other
+	 */
 	
 	public boolean after(ContextAttribs other) {
 		if(this.majorVersion > other.majorVersion)

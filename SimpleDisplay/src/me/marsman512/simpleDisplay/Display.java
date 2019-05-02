@@ -34,7 +34,10 @@ public class Display {
 	public static WindowEventHandler getCurrentWindowEventHandler() {
 		return currentHandler;
 	}
-	
+	/**
+	 * Sets the current event handler for the window.
+	 * @param value
+	 */
 	public static void setCurrentWindowEventHandler(WindowEventHandler value) {
 		if(value != null)
 			currentHandler = value;
@@ -59,6 +62,7 @@ public class Display {
 	
 	/**
 	 * Calls glfwInit() and creates a window with the supplied parameters.
+	 * ONLY CALL THIS FUNCTION ONCE!!!
 	 */
 	public static void start(ContextAttribs ctx, PixelFormat pForm, WindowAttribs wAttribs) {
 		f_defWinAttribs = wAttribs;
@@ -135,6 +139,9 @@ public class Display {
 			glfwShowWindow(f_windowID);
 	}
 	
+	/**
+	 * Show the window to the monitor if it's not already visible.
+	 */
 	public static void showWindow() {
 		glfwShowWindow(f_windowID);
 	}
@@ -177,20 +184,18 @@ public class Display {
 	}
 	
 	/**
-	 * @param
+	 * Put the window into fullscreen mode on the selected monitor
 	 */
 	public static void setFullscreen(int monitorID) {
 		if(glfwGetWindowMonitor(f_windowID) != 0)
 			return;
 		
-		PointerBuffer monitors = glfwGetMonitors();
-		if(monitorID >= monitors.capacity())
-			throw new IllegalArgumentException("There is no monitor " + monitorID + "!");
+		long monitor = getInternalMonitorID(monitorID);
 		
-		GLFWVidMode vidMode = glfwGetVideoMode(monitors.get(monitorID));
+		GLFWVidMode vidMode = glfwGetVideoMode(monitor);
 		glfwSetWindowMonitor(
 								f_windowID,
-								monitors.get(monitorID),
+								monitor,
 								0,
 								0,
 								Math.min(f_width, vidMode.width()), 
@@ -201,11 +206,13 @@ public class Display {
 		updateSizeVariables();
 	}
 	
+	/**
+	 * If the window is in fullscreen mode, bring it back to windowed.
+	 */
 	public static void setWindowed() {
 		if(glfwGetWindowMonitor(f_windowID) == 0)
 			return;
 		
-		GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowMonitor(
 				f_windowID, 0, 
 				f_defX, f_defY, 
@@ -213,6 +220,16 @@ public class Display {
 				GLFW_DONT_CARE);
 		
 		updateSizeVariables();
+	}
+	
+	/**
+	 * Internal function. DO NOT USE!!!
+	 */
+	public static long getInternalMonitorID(int id) {
+		PointerBuffer monitors = glfwGetMonitors();
+		if(id >= monitors.capacity())
+			throw new IllegalArgumentException("There is no monitor " + id + "!");
+		return monitors.get(id);
 	}
 	
 	private static void updateSizeVariables() {
