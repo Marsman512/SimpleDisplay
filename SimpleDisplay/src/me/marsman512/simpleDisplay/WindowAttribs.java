@@ -5,5 +5,5 @@ package me.marsman512.simpleDisplay;
 public class WindowAttribs {
 	public String title = "SimpleDisplay Window";
 	public int width = 1280, height = 720;
-	public boolean fullscreen = false, resizable = false, vsync = true;
+	public boolean fullscreen = false, resizable = false, vsync = true, startVisible = true;
 }

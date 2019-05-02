@@ -4,6 +4,9 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.opengl.GL11C.*;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
+import org.lwjgl.glfw.GLFWWindowIconifyCallbackI;
+import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 import java.lang.Math;
 
 import org.lwjgl.system.MemoryStack;
@@ -22,6 +25,37 @@ public class Display {
 	private static int f_fbWidth, f_fbHeight;
 	private static int f_defX, f_defY;
 	private static WindowAttribs f_defWinAttribs;
+	
+	// Handler
+	public static final WindowEventHandler defWinHandler = new WindowEventHandler() {};
+	
+	private static WindowEventHandler currentHandler = defWinHandler;
+	
+	public static WindowEventHandler getCurrentWindowEventHandler() {
+		return currentHandler;
+	}
+	
+	public static void setCurrentWindowEventHandler(WindowEventHandler value) {
+		if(value != null)
+			currentHandler = value;
+		else
+			throw new NullPointerException("You can't have a null WindowEventHandler!");
+	}
+	
+	// Callbacks
+	private static final GLFWWindowCloseCallbackI windowCloseCB = (long windowID) -> currentHandler.windowClosed();
+	
+	private static final GLFWWindowSizeCallbackI windowSizeCB = (long windowID, int width, int height) -> {
+		updateSizeVariables();
+		currentHandler.windowResized(width, height);
+	};
+	
+	private static final GLFWWindowIconifyCallbackI windowMinCB = (long windowID, boolean iconified) -> {
+		if(iconified)
+			currentHandler.windowMinimized();
+		else
+			currentHandler.windowRestored();
+	};
 	
 	/**
 	 * Calls glfwInit() and creates a window with the supplied parameters.
@@ -91,7 +125,17 @@ public class Display {
 		Mouse.init();
 		Gamepad.start();
 		
+		// Set WindowEventHandler callbacks
+		glfwSetWindowCloseCallback(f_windowID, windowCloseCB);
+		glfwSetWindowIconifyCallback(f_windowID, windowMinCB);
+		glfwSetWindowSizeCallback(f_windowID, windowSizeCB);
+		
 		// Show the window at long last
+		if(wAttribs.startVisible)
+			glfwShowWindow(f_windowID);
+	}
+	
+	public static void showWindow() {
 		glfwShowWindow(f_windowID);
 	}
 	
@@ -118,8 +162,8 @@ public class Display {
 	 * DO NOT USE stop() TO CLOSE THE PROGRAM!!!
 	 * USE stop() TO CLEAN UP AT THE END OF A PROGRAM!!!
 	 */
-	public static void close() {
-		glfwSetWindowShouldClose(f_windowID, true);
+	public static void setClose(boolean value) {
+		glfwSetWindowShouldClose(f_windowID, value);
 	}
 	
 	/**
@@ -155,7 +199,6 @@ public class Display {
 							);
 		
 		updateSizeVariables();
-		glViewport(0, 0, f_fbWidth, f_fbHeight);
 	}
 	
 	public static void setWindowed() {
@@ -170,7 +213,6 @@ public class Display {
 				GLFW_DONT_CARE);
 		
 		updateSizeVariables();
-		glViewport(0, 0, f_fbWidth, f_fbHeight);
 	}
 	
 	private static void updateSizeVariables() {

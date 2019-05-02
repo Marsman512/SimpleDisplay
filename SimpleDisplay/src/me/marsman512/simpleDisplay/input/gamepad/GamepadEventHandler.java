@@ -1,6 +1,8 @@
 package me.marsman512.simpleDisplay.input.gamepad;
 
 public interface GamepadEventHandler {
+	
+	// Copied, modified, and pasted from LWJGL's GLFW.java
 	int
     GAMEPAD_BUTTON_A            = 0,
     GAMEPAD_BUTTON_B            = 1,
@@ -26,4 +28,7 @@ public interface GamepadEventHandler {
 	void buttonPressed(int player, int button);
 	void buttonReleased(int player, int button);
 	void axisMoved(int player, int axis, float currentPos);
+	
+	void gamepadConnected(int player);
+	void gamepadDisconnected(int player);
 }

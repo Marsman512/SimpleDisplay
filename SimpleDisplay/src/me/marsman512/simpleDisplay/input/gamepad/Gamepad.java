@@ -23,16 +23,33 @@ public class Gamepad {
 		public void axisMoved(int player, int axis, float currentPos) {
 			
 		}
+
+		@Override
+		public void gamepadConnected(int player) {
+			
+		}
+
+		@Override
+		public void gamepadDisconnected(int player) {
+			
+		}
 	};
 	
 	private static GamepadEventHandler currentHandler = defEventHandler;
 	
 	public static void setCurrentHandler(GamepadEventHandler value) {
-		currentHandler = value;
+		if(value != null)
+			currentHandler = value;
+		else
+			throw new NullPointerException("You can't have a null GamepadEventHandler!");
 	}
 	
 	public static GamepadEventHandler getCurrentHandler() {
 		return currentHandler;
+	}
+	
+	public static boolean isGamepadConnected(int id) {
+		return connected[id];
 	}
 	
 	// Internal stuff
@@ -42,8 +59,13 @@ public class Gamepad {
 	private static final GLFWGamepadState glfwGPS = GLFWGamepadState.create();
 	
 	private static final GLFWJoystickCallbackI joyCB = (int jid, int event) -> {
-		if(glfwJoystickIsGamepad(jid))
-			connected[jid] = (event == GLFW_CONNECTED);
+		if(event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
+			connected[jid] = true;
+			currentHandler.gamepadConnected(jid);
+		} else if(event == GLFW_DISCONNECTED && connected[jid]) {
+			connected[jid] = false;
+			currentHandler.gamepadDisconnected(jid);
+		}
 	};
 	
 	/**
