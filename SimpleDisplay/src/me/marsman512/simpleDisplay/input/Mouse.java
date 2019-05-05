@@ -64,6 +64,12 @@ public class Mouse {
 	private static final GLFWCursorPosCallbackI mousePosCB = (long window, double x, double y) -> currentHandler.mouseMoved(x, y);
 	private static final GLFWScrollCallbackI mouseScrollCB = (long window, double x, double y) -> currentHandler.mouseScrolled(y);
 	
+	// Public constants
+	public static final int
+		NORMAL = GLFW_CURSOR_NORMAL,
+		HIDDEN = GLFW_CURSOR_HIDDEN,
+		GRABBED = GLFW_CURSOR_DISABLED;
+	
 	/**
 	 * Used in Display.start(). Please do not use this method!
 	 */
@@ -73,5 +79,9 @@ public class Mouse {
 		glfwSetCursorPosCallback(windowID, mousePosCB);
 		glfwSetScrollCallback(windowID, mouseScrollCB);
 		// O-o
+	}
+	
+	public static void setCursorMode(int mode) {
+		glfwSetInputMode(Display.getWindowID(), GLFW_CURSOR, mode);
 	}
 }
